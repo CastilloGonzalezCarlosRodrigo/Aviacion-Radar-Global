@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AERO-OPS Enterprise // Consola Central de Operaciones</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/styles.css">
+
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest" defer></script>
+    <script src="js/app.js" defer></script>
+</head>
+<body>
+
+    <!-- BARRA DE ALERTAS CRÍTICAS -->
+    <div class="emergency-ticker">
+        <span class="ticker-badge">CENTRO DE CONTROL</span>
+        <div class="ticker-content" id="emergency-alert">
+            [SYS-ACTIVE] Protocolo de vigilancia meteorológica global activo. Red de enlaces satelitales operando al 100%.
+        </div>
+    </div>
+
+    <!-- NAVBAR INTERNO -->
+    <header class="navbar">
+        <div class="logo">
+            <span class="badge-yellow">AERO-OPS</span> // ENTERPRISE
+        </div>
+        <nav class="nav-links">
+            <a href="#radar">Radar 3D</a>
+            <a href="#operaciones">Control de Flota</a>
+            <a href="#meteo">Meteorología</a>
+            <a href="#mantenimiento">Ingeniería & Hangar</a>
+            <a href="#tripulacion">Tripulación</a>
+            <a href="#despacho">Despacho</a>
+        </nav>
+        <div class="nav-actions">
+            <button id="theme-toggle" class="btn-dark" style="font-size: 0.65rem; padding: 0.5rem 0.8rem;" title="Cambiar a Modo Nocturno Táctico">Modo Táctico</button>
+            <div class="system-status">
+                <span class="pulse-dot"></span> ENLACE ACTIVO
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO / RADAR 3D -->
+    <main class="hero-aviation" id="radar">
+        <div class="hero-info">
+            <span class="tag-yellow">SISTEMA INTEGRAL DE OPERACIONES</span>
+            <h1>SUPERVISIÓN GLOBAL DE FLOTA Y CORREDORES</h1>
+            <p>
+                Consola central para despachadores, ingenieros y jefes de sector. Monitoreo satelital de aeronaves en movimiento, control de mantenimiento y auditoría de bases.
+            </p>
+            
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <strong id="active-flights-count">1,428</strong>
+                    <span>Aviones en Ruta</span>
+                </div>
+                <div class="metric-box">
+                    <strong>99.98%</strong>
+                    <span>Eficiencia de Red</span>
+                </div>
+                <div class="metric-box">
+                    <strong>6</strong>
+                    <span>Bases Operativas</span>
+                </div>
+            </div>
+
+            <div class="hero-buttons">
+                <button class="btn-yellow" id="toggle-rotation">Pausar Rotación Radar</button>
+                <button class="btn-dark" id="reset-view">Centrar en Base Principal</button>
+            </div>
+        </div>
+
+        <div class="globe-container" id="globe-viz">
+            <div class="globe-hint">[ Arrastra para rotar / Clic en hubs base ]</div>
+        </div>
+    </main>
+
+    <!-- SECCIÓN: METEOROLOGÍA POR HUB -->
+    <section id="meteo" class="section-container">
+        <div class="section-header">
+            <div>
+                <span class="tag-yellow">ESTADO DEL TIEMPO EN PISTAS</span>
+                <h2>MONITOREO METEOROLÓGICO DE BASES</h2>
+            </div>
+        </div>
+        <div class="meteo-grid" id="meteo-cards-container"></div>
+    </section>
+
+    <!-- SECCIÓN: CONTROL DE FLOTA Y VUELOS EN VIVO -->
+    <section id="operaciones" class="section-container">
+        <div class="section-header">
+            <div>
+                <span class="tag-yellow">GESTIÓN DE VUELOS COMERCIALES Y DE CARGA</span>
+                <h2>ESTATUS OPERATIVO DE FLOTA</h2>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                <div class="filter-controls">
+                    <button class="filter-tab active" data-filter="all">Todos</button>
+                    <button class="filter-tab" data-filter="active">En Vuelo</button>
+                    <button class="filter-tab" data-filter="landing">Aterrizando</button>
+                    <button class="filter-tab" data-filter="maintenance">En Hangar</button>
+                </div>
+                <button id="export-btn" class="btn-yellow" style="font-size: 0.65rem; padding: 0.6rem 1rem;"><i data-lucide="download"></i> Exportar CSV</button>
+            </div>
+        </div>
+
+        <div class="search-box" style="margin-bottom: 1.5rem;">
+            <input type="text" id="flight-search" placeholder="Buscar por matrícula, ruta o capitán...">
+        </div>
+
+        <div class="table-responsive">
+            <table class="flight-table">
+                <thead>
+                    <tr>
+                        <th>Vuelo / Matrícula</th>
+                        <th>Modelo</th>
+                        <th>Capitán a Cargo</th>
+                        <th>Ruta (Origen ➔ Destino)</th>
+                        <th>Altitud / Velocidad</th>
+                        <th>Puerta / Base</th>
+                        <th>Estatus</th>
+                    </tr>
+                </thead>
+                <tbody id="flights-table-body"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- SECCIÓN: INGENIERÍA Y HANGAR -->
+    <section id="mantenimiento" class="section-container">
+        <div class="section-header">
+            <div>
+                <span class="tag-yellow">DEPARTAMENTO DE TÉCNICA Y MECÁNICA</span>
+                <h2>BITÁCORA DE MANTENIMIENTO PREVENTIVO</h2>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="flight-table">
+                <thead>
+                    <tr>
+                        <th>Matrícula de Aeronave</th>
+                        <th>Modelo</th>
+                        <th>Horas de Vuelo Acumuladas</th>
+                        <th>Último Servicio Técnico</th>
+                        <th>Próximo Mantenimiento</th>
+                        <th>Estatus de Hangar</th>
+                    </tr>
+                </thead>
+                <tbody id="maintenance-table-body"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- SECCIÓN: CONTROL DE FATIGA DE TRIPULACIÓN -->
+    <section id="tripulacion" class="section-container">
+        <div class="section-header">
+            <div>
+                <span class="tag-yellow">RECURSOS HUMANOS Y OPERATIVOS</span>
+                <h2>CONTROL DE HORAS Y DESCANSO DE PILOTOS</h2>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="flight-table">
+                <thead>
+                    <tr>
+                        <th>Capitán / Oficial</th>
+                        <th>Rango</th>
+                        <th>Horas Acumuladas (Mes)</th>
+                        <th>Último Periodo de Descanso</th>
+                        <th>Disponibilidad Operativa</th>
+                    </tr>
+                </thead>
+                <tbody id="crew-table-body"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- SECCIÓN: DESPACHO Y PLANES DE VUELO -->
+    <section id="despacho" class="section-container">
+        <div class="dispatch-grid">
+            <div class="dispatch-info">
+                <span class="tag-yellow">MÓDULO DE DESPACHO AERONÁUTICO</span>
+                <h2>AUTORIZACIÓN Y CÁLCULO DE RUTA</h2>
+                <p>Ingresa los parámetros de salida. Los registros se almacenan de manera persistente en la consola y calculan automáticamente el costo de turbosina.</p>
+                <ul class="dispatch-specs">
+                    <li><i data-lucide="database"></i> Almacenamiento local automático</li>
+                    <li><i data-lucide="calculator"></i> Estimación de costos y turbosina</li>
+                </ul>
+            </div>
+
+            <form class="dispatch-form" id="flight-form">
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Matrícula / Código</label>
+                        <input type="text" id="f-code" required placeholder="Ej: AER-902">
+                    </div>
+                    <div class="input-group">
+                        <label>Capitán a Cargo</label>
+                        <input type="text" id="f-pilot" required placeholder="Ej: Cmdte. Alejandro Ruiz">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Modelo de Aeronave</label>
+                        <input type="text" id="f-model" required placeholder="Ej: Boeing 787-9">
+                    </div>
+                    <div class="input-group">
+                        <label>Distancia Estimada (km)</label>
+                        <input type="number" id="f-dist" required placeholder="Ej: 9200">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Ruta (Origen ➔ Destino)</label>
+                    <input type="text" id="f-route" required placeholder="Ej: Toluca (TLC) ➔ Madrid (MAD)">
+                </div>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Altitud</label>
+                        <input type="text" id="f-alt" required placeholder="Ej: 36,000 ft">
+                    </div>
+                    <div class="input-group">
+                        <label>Velocidad</label>
+                        <input type="text" id="f-spd" required placeholder="Ej: 910 km/h">
+                    </div>
+                </div>
+                <button type="submit" class="btn-yellow full-width">Calcular Costos y Autorizar Salida</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container footer-content">
+            <div class="logo"><span class="badge-yellow">AERO-OPS</span> // ENTERPRISE SYSTEM</div>
+            <p>© Realizado por el Ingeniero Carlos Rodrigo Castillo Gonzalez.</p>
+        </div>
+    </footer>
+
+    <!-- MODAL DE HUB -->
+    <div class="modal-overlay" id="hub-modal">
+        <div class="modal-card">
+            <button class="modal-close" id="close-modal"><i data-lucide="x"></i></button>
+            <span class="tag-yellow">AUDITORÍA DE BASE OPERATIVA</span>
+            <h2 id="modal-title">Nombre del Hub</h2>
+            <p id="modal-desc" style="color: var(--text-gray); margin: 1rem 0; font-size: 0.95rem;"></p>
+            <div class="metrics-grid" style="margin-top: 1.5rem;">
+                <div class="metric-box">
+                    <strong id="modal-gates">14</strong>
+                    <span>Puertas Activas</span>
+                </div>
+                <div class="metric-box">
+                    <strong id="modal-traffic">Alto</strong>
+                    <span>Saturación</span>
+                </div>
+                <div class="metric-box">
+                    <strong id="modal-status" style="color: var(--accent-yellow);">Óptimo</strong>
+                    <span>Torre Asignada</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
